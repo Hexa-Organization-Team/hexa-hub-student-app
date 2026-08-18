@@ -5,31 +5,38 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export async function middleware(request: NextRequest) {
-  // Routes that don't need authentication
+  // Public routes that don't need authentication
   const publicRoutes = ['/login', '/api/auth/check-email']
 
+  const pathname = request.nextUrl.pathname
+
   // Check if current path is public
-  if (publicRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next()
   }
 
   try {
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+    // Get the auth token from cookies
+    const token = request.cookies.get('sb-auth-token')?.value
 
-    // Get the session from cookies
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    // If no session and trying to access protected route, redirect to login
-    if (!session) {
+    if (!token) {
       return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // Try to verify the token with Supabase
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      
+      const { data, error } = await supabase.auth.getUser(token)
+
+      if (error || !data.user) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
     }
 
     return NextResponse.next()
   } catch (error) {
-    console.error('Middleware auth error:', error)
+    console.error('Middleware error:', error)
     return NextResponse.redirect(new URL('/login', request.url))
   }
 }

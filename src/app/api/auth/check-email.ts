@@ -3,21 +3,34 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json()
+    const body = await request.json()
+    const { email } = body
 
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 })
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return NextResponse.json({ error: 'Email non valida' }, { status: 400 })
     }
 
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-    )
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-    // Query auth.users table using admin API
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase credentials')
+      return NextResponse.json(
+        {
+          error: 'Server configuration error',
+          exists: null,
+        },
+        { status: 500 },
+      )
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+
+    // List all users and check if email exists
     const { data, error } = await supabaseAdmin.auth.admin.listUsers()
 
     if (error) {
+      console.error('Error listing users:', error)
       return NextResponse.json(
         {
           error: 'Could not verify email',
@@ -34,6 +47,7 @@ export async function POST(request: NextRequest) {
       email: email.toLowerCase(),
     })
   } catch (error) {
+    console.error('Check email error:', error)
     return NextResponse.json(
       {
         error: 'Could not verify email',

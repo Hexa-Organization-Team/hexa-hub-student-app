@@ -58,10 +58,16 @@ export default function LoginPage() {
 
   const handleEmailChange = (value: string) => {
     setEmail(value)
-    // Debounce email check
+    setEmailExists(null) // Reset email check when user changes it
+    
+    // Debounce email check with proper cleanup
     const timer = setTimeout(() => {
-      if (value) checkEmailExists(value)
-    }, 500)
+      if (value && value.includes('@')) {
+        checkEmailExists(value)
+      }
+    }, 700)
+    
+    return () => clearTimeout(timer)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -76,7 +82,23 @@ export default function LoginPage() {
         const trimmedLastName = lastName.trim()
 
         if (!trimmedFirstName || !trimmedLastName) {
-          throw new Error('Inserisci nome e cognome per continuare.')
+          throw new Error('Inserisci il tuo nome e cognome.')
+        }
+
+        if (!email || !email.includes('@')) {
+          throw new Error('Inserisci un\'email valida.')
+        }
+
+        if (password.length < 8) {
+          throw new Error('La password deve avere almeno 8 caratteri.')
+        }
+
+        if (!/[A-Z]/.test(password)) {
+          throw new Error('La password deve contenere almeno una lettera maiuscola.')
+        }
+
+        if (!/[0-9]/.test(password)) {
+          throw new Error('La password deve contenere almeno un numero.')
         }
 
         if (emailExists === true) {
@@ -95,14 +117,13 @@ export default function LoginPage() {
               last_name: trimmedLastName,
               full_name: `${trimmedFirstName} ${trimmedLastName}`,
             },
-            emailRedirectTo: `${window.location.origin}/`,
           },
         })
 
         if (authError) {
-          if (authError.message.includes('already registered')) {
+          if (authError.message.includes('already registered') || authError.message.includes('duplicate')) {
             setEmailExists(true)
-            setError('Questo account esiste già. Accedi invece.')
+            setError('Questo account esiste già. Accedi al tuo account.')
             setMode('login')
             setLoading(false)
             return
@@ -110,23 +131,40 @@ export default function LoginPage() {
           throw authError
         }
 
-        if (data.user && !data.session) {
-          setMessage('Registrazione completata: controlla la tua email per confermare l’account.')
+        if (data.user) {
+          setMessage('Registrazione completata! Controlla la tua email per confermare l\'account, poi potrai accedere.')
+          // Reset form after a delay
+          setTimeout(() => {
+            setMode('login')
+            setFirstName('')
+            setLastName('')
+            setEmail('')
+            setPassword('')
+            setMessage(null)
+          }, 2500)
+          setLoading(false)
           return
         }
       }
 
       if (mode === 'login') {
+        // Validate password length
+        if (password.length < 6) {
+          throw new Error('La password deve avere almeno 6 caratteri.')
+        }
+
         const { data, error: authError } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
 
         if (authError) {
-          if (authError.message.includes('Invalid login credentials')) {
-            setEmailExists(false)
-            setError('Account non trovato. Registrati invece.')
-            setMode('register')
+          // Check if it's a user not found error
+          if (
+            authError.message.includes('Invalid login credentials') ||
+            authError.message.includes('Email not confirmed')
+          ) {
+            setError('Email o password non corretti. Riprova o registrati se non hai un account.')
             setLoading(false)
             return
           }
