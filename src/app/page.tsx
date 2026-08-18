@@ -76,8 +76,8 @@ export default function Page() {
     <>
       <Navbar />
       <main className="flex min-h-dvh w-full flex-col bg-background">
-        {/* Container con padding */}
-        <div className="mx-auto w-full max-w-5xl flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+        {/* Container con padding — pb extra per la barra categorie fissa */}
+        <div className="mx-auto w-full max-w-5xl flex-1 px-4 pb-32 pt-6 sm:px-6 lg:px-8">
           {/* Stats Header - 1 colonna mobile, 2-3 desktop */}
           <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {/* Grades Average Card */}
@@ -123,40 +123,25 @@ export default function Page() {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {/* Left Sidebar - hidden on very small, full on mobile, 1 col md+*/}
-            <div className="flex flex-col gap-5 md:col-span-1">
-              <div className="order-1 md:order-1">
-                <QuickActionButton />
-              </div>
-              <div className="order-2 md:order-2">
-                <PlannerHeader />
-              </div>
-              <div className="order-4 md:order-3">
-                <AiRemindersCard completed={completed} total={total} />
-              </div>
-              <div className="order-5 md:order-4">
-                <GradesList />
-              </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Left Sidebar */}
+            <div className="flex flex-col gap-5 lg:col-span-1">
+              <PlannerHeader />
+              <AiRemindersCard completed={completed} total={total} />
+              <GradesList />
             </div>
 
-            {/* Center Content - Reminders */}
-            <div className="order-3 md:order-2 md:col-span-2 lg:col-span-2">
+            {/* Center Content - Reminders + Tasks */}
+            <div className="flex flex-col gap-8 lg:col-span-2">
               <ReminderList />
+              <TaskList tasks={tasks} onToggle={toggle} />
             </div>
-
-            {/* Right Sidebar - only on large screens */}
-            <div className="hidden flex-col gap-5 lg:col-span-1 lg:flex">
-              {/* Progress Card will be positioned here on large screens, but we'll show it above on mobile */}
-            </div>
-          </div>
-
-          {/* Full Width Tasks Section */}
-          <div className="mt-8">
-            <TaskList tasks={tasks} onToggle={toggle} />
           </div>
         </div>
       </main>
+
+      {/* Barra categorie fissa in basso */}
+      <QuickActionButton />
     </>
   )
 }
