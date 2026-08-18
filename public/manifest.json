@@ -1,6 +1,6 @@
 {
-  "name": "Hexa Hub",
-  "short_name": "HexaHub",
+  "name": "Hexa Student Hub",
+  "short_name": "HexaStudent",
   "description": "App per lo studio e la gestione universitaria",
   "start_url": "/",
   "display": "standalone",
