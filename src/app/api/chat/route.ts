@@ -75,6 +75,7 @@ export async function POST(req: Request) {
     if (!resp.ok) {
       const details = await resp.text()
 
+      // Fallback demo se credito esaurito, chiave invalida o problemi di fatturazione
       if (
         details.includes('insufficient_quota') ||
         details.includes('billing') ||

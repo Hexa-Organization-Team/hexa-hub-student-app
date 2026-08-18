@@ -13,11 +13,15 @@ const sora = Sora({
   variable: '--font-display',
 })
 
-export const metadata: Metadata = {
-  title: 'Diario — Student Planner',
-  description:
-    'Smart AI-powered student planner and reminders for the Italian school system.',
-  generator: 'v0.app',
+export const metadata = {
+  title: 'Hexa Student Hub',
+  description: 'App per lo studio',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Hexa Student Hub',
+  },
 }
 
 export const viewport: Viewport = {

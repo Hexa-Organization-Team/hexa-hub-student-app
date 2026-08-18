@@ -2,12 +2,12 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import {
-  ChevronDown,
   FileText,
   Calendar,
   Bot,
   Bell,
-  LayoutGrid,
+  Menu,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 import AiTutorChat from './AiTutorChat'
@@ -99,45 +99,52 @@ export default function QuickActionButton() {
           aria-haspopup="menu"
           aria-label="Apri menu categorie"
           className={cn(
-            'flex items-center gap-2 rounded-xl bg-card px-3 py-2 text-sm font-medium ring-1 ring-border transition-colors hover:bg-secondary',
+            'flex h-11 w-11 items-center justify-center rounded-xl bg-card text-foreground ring-1 ring-border transition-colors hover:bg-secondary md:w-auto md:px-3 md:gap-2',
             open && 'bg-secondary',
           )}
         >
-          <LayoutGrid className="size-4 text-primary" aria-hidden />
-          <span>Categorie</span>
-          <ChevronDown
-            className={cn('size-4 text-muted-foreground transition-transform duration-200', open && 'rotate-180')}
-            aria-hidden
-          />
+          {open ? <X className="size-5 text-primary" aria-hidden /> : <Menu className="size-5 text-primary" aria-hidden />}
+          <span className="hidden md:inline text-sm font-medium">Categorie</span>
         </button>
 
         <div
           role="menu"
           aria-label="Categorie azioni rapide"
           className={cn(
-            'absolute left-0 top-full z-40 mt-2 w-64 origin-top-left overflow-hidden rounded-2xl bg-card shadow-xl ring-1 ring-border transition-all duration-200',
+            'absolute left-0 top-full z-40 mt-2 w-[min(92vw,18rem)] origin-top-left overflow-hidden rounded-[28px] border border-border bg-card/95 shadow-2xl backdrop-blur-xl transition-all duration-200',
             open
               ? 'pointer-events-auto scale-100 opacity-100'
               : 'pointer-events-none scale-95 opacity-0',
           )}
         >
-          <div className="border-b border-border px-3 py-2.5">
-            <p className="text-xs font-medium text-muted-foreground">Azioni rapide</p>
+          <div className="border-b border-border px-4 py-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Azioni rapide</p>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Chiudi menu"
+              >
+                <X className="size-4" aria-hidden />
+              </button>
+            </div>
           </div>
-          <div className="p-1.5">
+
+          <div className="space-y-1 p-2">
             {categories.map(({ id, label, description, emoji, icon: Icon, accent }) => (
               <button
                 key={id}
                 type="button"
                 role="menuitem"
                 onClick={() => openModal(id)}
-                className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-secondary"
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-secondary/70"
               >
-                <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-xl', accent)}>
+                <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-2xl', accent)}>
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5 text-sm font-medium">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold">
                     <span aria-hidden>{emoji}</span>
                     {label}
                   </span>
