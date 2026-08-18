@@ -38,7 +38,7 @@ export default function Page() {
         const { data: sessionData } = await supabase.auth.getSession()
         if (!sessionData.session?.user.id) {
           setLoading(false)
-          return
+          return 
         }
 
         // Get reminders count
