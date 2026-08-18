@@ -1,13 +1,11 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import {
   FileText,
   Calendar,
   Bot,
   Bell,
-  Menu,
-  X,
   type LucideIcon,
 } from 'lucide-react'
 import AiTutorChat from './AiTutorChat'
@@ -19,6 +17,7 @@ type ModalType = 'note' | 'event' | 'chat' | 'reminder'
 const categories: {
   id: ModalType
   label: string
+  short: string
   description: string
   emoji: string
   icon: LucideIcon
@@ -27,6 +26,7 @@ const categories: {
   {
     id: 'note',
     label: 'Nuova Nota',
+    short: 'Nota',
     description: 'Appunti e idee',
     emoji: '📝',
     icon: FileText,
@@ -35,6 +35,7 @@ const categories: {
   {
     id: 'event',
     label: 'Evento / Esame',
+    short: 'Evento',
     description: 'Calendario scolastico',
     emoji: '📅',
     icon: Calendar,
@@ -43,6 +44,7 @@ const categories: {
   {
     id: 'chat',
     label: 'Tutor AI',
+    short: 'Tutor',
     description: 'Chiedi assistenza',
     emoji: '🤖',
     icon: Bot,
@@ -51,6 +53,7 @@ const categories: {
   {
     id: 'reminder',
     label: 'Promemoria',
+    short: 'Promemoria',
     description: 'Avvisi e scadenze',
     emoji: '⏰',
     icon: Bell,
@@ -59,102 +62,43 @@ const categories: {
 ]
 
 export default function QuickActionButton() {
-  const [open, setOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<ModalType | null>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [open])
 
   function openModal(modal: ModalType) {
     setActiveModal(modal)
-    setOpen(false)
   }
 
   return (
     <>
-      <div ref={menuRef} className="relative self-start">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-haspopup="menu"
-          aria-label="Apri menu categorie"
-          className={cn(
-            'flex h-11 w-11 items-center justify-center rounded-xl bg-card text-foreground ring-1 ring-border transition-colors hover:bg-secondary md:w-auto md:px-3 md:gap-2',
-            open && 'bg-secondary',
-          )}
-        >
-          {open ? <X className="size-5 text-primary" aria-hidden /> : <Menu className="size-5 text-primary" aria-hidden />}
-          <span className="hidden md:inline text-sm font-medium">Categorie</span>
-        </button>
-
-        <div
-          role="menu"
-          aria-label="Categorie azioni rapide"
-          className={cn(
-            'absolute left-0 top-full z-40 mt-2 w-[min(92vw,18rem)] origin-top-left overflow-hidden rounded-[28px] border border-border bg-card/95 shadow-2xl backdrop-blur-xl transition-all duration-200',
-            open
-              ? 'pointer-events-auto scale-100 opacity-100'
-              : 'pointer-events-none scale-95 opacity-0',
-          )}
-        >
-          <div className="border-b border-border px-4 py-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Azioni rapide</p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                aria-label="Chiudi menu"
-              >
-                <X className="size-4" aria-hidden />
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-1 p-2">
-            {categories.map(({ id, label, description, emoji, icon: Icon, accent }) => (
+      {/* Barra categorie fissa in basso */}
+      <nav
+        aria-label="Categorie azioni rapide"
+        className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+      >
+        <div className="flex w-full max-w-md items-stretch justify-around gap-1 rounded-2xl border border-border bg-card/95 p-1.5 shadow-2xl shadow-black/20 backdrop-blur-xl">
+          {categories.map(({ id, short, label, icon: Icon, accent }) => {
+            const isActive = activeModal === id
+            return (
               <button
                 key={id}
                 type="button"
-                role="menuitem"
                 onClick={() => openModal(id)}
-                className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-secondary/70"
+                aria-label={label}
+                aria-current={isActive ? 'true' : undefined}
+                className={cn(
+                  'flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground',
+                  isActive && 'bg-secondary/70 text-foreground',
+                )}
               >
-                <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-2xl', accent)}>
+                <span className={cn('flex size-9 items-center justify-center rounded-xl', accent)}>
                   <Icon className="size-4" aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5 text-sm font-semibold">
-                    <span aria-hidden>{emoji}</span>
-                    {label}
-                  </span>
-                  <span className="block truncate text-xs text-muted-foreground">{description}</span>
-                </span>
+                <span className="text-[10px] font-medium leading-none sm:text-xs">{short}</span>
               </button>
-            ))}
-          </div>
+            )
+          })}
         </div>
-      </div>
+      </nav>
 
       {activeModal === 'note' && (
         <SimpleModal title="📝 Nuova Nota" onClose={() => setActiveModal(null)}>
