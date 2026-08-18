@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, LockKeyhole, Mail, Sparkles, UserRound, Globe, GitBranch } from 'lucide-react'
@@ -21,6 +21,17 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [checkingEmail, setCheckingEmail] = useState(false)
   const [emailExists, setEmailExists] = useState<boolean | null>(null)
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session?.user) {
+        router.replace('/')
+      }
+    }
+    checkAuth()
+  }, [router])
 
   const checkEmailExists = async (emailToCheck: string) => {
     if (!emailToCheck) {

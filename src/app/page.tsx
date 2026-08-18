@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AiRemindersCard } from '@/components/ai-reminders-card'
 import { PlannerHeader } from '@/components/planner-header'
 import { TaskList } from '@/components/task-list'
@@ -13,6 +14,8 @@ import { BookOpen, CheckCircle2, Clock } from 'lucide-react'
 import { supabase } from '@/src/lib/supabaseClient'
 
 export default function Page() {
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [tasks, setTasks] = useState(initialTasks)
   const [remindersCount, setRemindersCount] = useState(0)
   const [gradesAverage, setGradesAverage] = useState<string | null>(null)
@@ -37,9 +40,12 @@ export default function Page() {
       try {
         const { data: sessionData } = await supabase.auth.getSession()
         if (!sessionData.session?.user.id) {
+          router.replace('/login')
           setLoading(false)
-          return 
+          return
         }
+
+        setIsAuthenticated(true)
 
         // Get reminders count
         const { data: reminders, error: remindersError } = await supabase
@@ -70,7 +76,24 @@ export default function Page() {
     }
 
     loadStats()
-  }, [])
+  }, [router])
+
+  // Show loading screen while checking authentication
+  if (!isAuthenticated && loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-transparent border-t-primary" />
+          <p className="text-muted-foreground">Verifica in corso...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If not authenticated, return null (redirect is in progress)
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <>
