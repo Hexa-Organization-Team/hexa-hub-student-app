@@ -99,6 +99,11 @@ export default function LoginPage() {
           throw authError
         }
 
+        if (data.session) {
+          router.replace('/')
+          return
+        }
+
         if (data.user && !data.session) {
           setMessage('Registrazione completata: controlla la tua email per confermare l’account.')
           return
